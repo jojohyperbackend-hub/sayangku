@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#dbe8ff" />
+<title>buat kamu ♡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Patrick+Hand&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#22305e;
+    --pink:#ff8fb7; --pink-deep:#e8508f; --pink-soft:#ffd3e3; --pink-pale:#fff1f6;
+    --blue:#6ea8ff; --blue-deep:#3a74d8; --blue-soft:#cfe2ff; --blue-pale:#ecf4ff;
+    --paper:#fffdfb;
+    --s:min(26vw,15vh,140px);
+    --hand:'Caveat',cursive;
+    --pen:'Patrick Hand','Caveat',cursive;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{
+    color:var(--ink);font-family:var(--pen);
+    background:
+      radial-gradient(110% 55% at 50% 112%, rgba(255,170,200,.6), transparent 62%),
+      radial-gradient(80% 45% at 50% -8%, rgba(255,255,255,.95), transparent 70%),
+      linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px) 0 0/26px 26px,
+      linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px) 0 0/26px 26px,
+      #dbe8ff;
+    -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:manipulation;
+  }
+  .defs{position:absolute;width:0;height:0;overflow:hidden}
+  .grain{position:fixed;inset:0;pointer-events:none;z-index:20;opacity:.2;mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .13  0 0 0 0 .19  0 0 0 0 .37  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+  #fx{position:fixed;inset:0;z-index:12;pointer-events:none}
+  #stage{position:fixed;inset:0;z-index:5;overflow:hidden;transition:opacity .9s ease}
+  body.loading #stage{opacity:0}
+  .scene{position:absolute;inset:0}
+  #sRise,#sLetter{pointer-events:none}
+  svg{overflow:visible;display:block}
+  .word{display:inline-block;white-space:nowrap}
+  .ch{display:inline-block;opacity:0}
+
+  /* ---------- kado ---------- */
+  .note{position:absolute;left:6vw;right:6vw;top:max(8vh,34px);text-align:center;font-family:var(--hand);font-weight:700;font-size:clamp(30px,8vw,46px);line-height:1.05}
+  .hint{position:absolute;left:0;right:0;bottom:max(9vh,44px);text-align:center;font-family:var(--hand);font-weight:700;font-size:clamp(24px,6.2vw,32px);color:var(--pink-deep);opacity:0}
+  .hint .arrow{width:26px;height:30px;margin:0 auto 4px;animation:nudge 1.1s ease-in-out infinite}
+  @keyframes nudge{50%{transform:translateY(-7px)}}
+  .giftwrap{position:absolute;left:50%;top:50%;width:var(--s);height:var(--s);margin:calc(var(--s)*-.5) 0 0 calc(var(--s)*-.5);cursor:pointer}
+  .net{position:absolute;inset:0;perspective:700px}
+  .net.idle{animation:idle 2.6s ease-in-out infinite}
+  @keyframes idle{
+    0%,58%,100%{transform:none}
+    66%{transform:translateY(-12px) rotate(-3deg)}
+    74%{transform:translateY(0) scale(1.06,.93)}
+    80%{transform:scale(.98,1.03) rotate(2deg)}
+    88%{transform:rotate(-1deg)}
+  }
+  .flap,.lid,.inside{position:absolute;width:100%;height:100%}
+  .inside{left:0;top:0;z-index:1}
+  .flap{z-index:2;opacity:0}
+  .f-top{left:0;bottom:100%;transform-origin:50% 100%;transform:rotateX(-90deg)}
+  .f-bottom{left:0;top:100%;transform-origin:50% 0;transform:rotateX(90deg)}
+  .f-left{top:0;right:100%;transform-origin:100% 50%;transform:rotateY(90deg)}
+  .f-right{top:0;left:100%;transform-origin:0 50%;transform:rotateY(-90deg)}
+  .flap svg,.lid svg,.inside svg{width:100%;height:100%}
+  .flap .w{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--hand);font-weight:700;font-size:calc(var(--s)*.3);color:var(--ink)}
+  .lid{left:0;top:0;z-index:5}
+  .bow{position:absolute;z-index:6;width:calc(var(--s)*.72);left:calc(var(--s)*.14);top:calc(var(--s)*.22);pointer-events:none}
+  .inheart{transform-box:fill-box;transform-origin:center}
+  .inheart.beat{animation:beat 1.15s ease-in-out infinite}
+  @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.15)}30%{transform:scale(.97)}45%{transform:scale(1.08)}}
+  .glow{position:absolute;left:50%;top:50%;width:calc(var(--s)*4.4);height:calc(var(--s)*4.4);margin:calc(var(--s)*-2.2) 0 0 calc(var(--s)*-2.2);border-radius:50%;
+    background:radial-gradient(circle,rgba(255,255,255,.95) 0,rgba(255,211,227,.55) 32%,rgba(207,226,255,0) 66%);opacity:0;pointer-events:none}
+  .shadow{position:absolute;left:-14%;right:-14%;top:94%;height:24%;background:radial-gradient(closest-side,rgba(34,48,94,.22),rgba(34,48,94,0))}
+  .rays{position:absolute;left:50%;top:0;width:calc(var(--s)*6);height:calc(var(--s)*6);margin:calc(var(--s)*-3) 0 0 calc(var(--s)*-3);pointer-events:none}
+  .anno{position:absolute;left:calc(100% - 4px);bottom:calc(100% - 14px);width:78px;height:62px}
+  .anno-label{position:absolute;left:calc(100% + 66px);bottom:calc(100% + 30px);font-family:var(--hand);font-weight:700;font-size:34px;opacity:0;transform:rotate(-6deg);white-space:nowrap}
+
+  /* ---------- naik dari bawah ---------- */
+  .bal{position:absolute;top:100%}
+  .bal .sw{transform-origin:50% 10%;animation:sway var(--d,3s) ease-in-out infinite alternate}
+  @keyframes sway{from{transform:rotate(-5deg) translateX(-6px)}to{transform:rotate(5deg) translateX(6px)}}
+  .carrier{position:absolute;left:50%;top:100%;width:min(34vw,140px);margin-left:calc(min(34vw,140px)*-.5);z-index:3}
+  .carrier .sw{display:flex;flex-direction:column;align-items:center;transform-origin:50% 8%;animation:sway 3.4s ease-in-out infinite alternate}
+  #hb{width:100%;transform-origin:50% 50%}
+  #str{width:22px;height:min(11vh,80px);margin-top:-9px}
+  #mini{width:min(20vw,78px);margin-top:-3px}
+  .sing{position:absolute;left:0;right:0;bottom:20%;text-align:center;font-family:var(--hand);font-weight:700;font-size:clamp(36px,9.5vw,54px);color:var(--blue-deep);text-shadow:2px 2px 0 #fff}
+  .sing .word{animation:hop .9s ease-in-out infinite}
+  @keyframes hop{50%{transform:translateY(-10px) rotate(-4deg)}}
+  .pop{position:absolute;left:0;top:0;font-family:var(--hand);font-weight:700;font-size:52px;color:var(--pink-deep);text-shadow:2px 2px 0 #fff;pointer-events:none;z-index:6}
+
+  /* ---------- surat ---------- */
+  #env{position:absolute;inset:0;margin:auto;width:min(74vw,320px);height:calc(min(74vw,320px)*.64);perspective:900px;visibility:hidden;z-index:2}
+  .env-back{position:absolute;inset:0;background:var(--blue-soft);border:2.2px solid var(--ink);border-radius:6px}
+  .env-letter{position:absolute;left:7%;right:7%;top:6%;height:86%;z-index:2;border:2px solid var(--ink);border-radius:4px;
+    background:repeating-linear-gradient(180deg,transparent 0 13px,rgba(110,168,255,.3) 13px 14px),var(--paper);
+    display:flex;justify-content:center;padding-top:5%;font-family:var(--hand);font-weight:700;font-size:clamp(20px,5.4vw,28px);color:var(--pink-deep)}
+  .env-front{position:absolute;inset:0;width:100%;height:100%;z-index:3}
+  .env-flap{position:absolute;inset:0;z-index:4;transform-origin:50% 0}
+  .env-flap svg{width:100%;height:100%}
+  .seal{position:absolute;z-index:5;left:42%;width:16%;top:62.5%;margin-top:-8%}
+
+  #cardwrap{position:absolute;inset:0;margin:auto;width:min(86vw,380px);height:min(76vh,560px);perspective:1400px;visibility:hidden;z-index:3}
+  #card{position:relative;width:100%;height:100%;transform-style:preserve-3d}
+  .face{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    background:
+      linear-gradient(90deg,transparent 30px,rgba(255,143,183,.6) 30px,rgba(255,143,183,.6) 32px,transparent 32px),
+      repeating-linear-gradient(180deg,transparent 0 31px,rgba(110,168,255,.26) 31px 32px),
+      var(--paper);
+    box-shadow:7px 9px 0 rgba(34,48,94,.13),0 26px 50px -24px rgba(34,48,94,.45);
+    padding:max(42px,7%) 20px 20px 44px;display:flex;flex-direction:column}
+  .back{transform:rotateY(180deg)}
+  .face .border{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+  .tape{position:absolute;top:-12px;width:86px;height:26px;background:rgba(110,168,255,.5);
+    clip-path:polygon(3% 0,97% 4%,100% 30%,96% 55%,100% 80%,97% 100%,2% 96%,0 70%,4% 45%,0 20%)}
+  .t1{left:18px;transform:rotate(-7deg)} .t2{right:18px;transform:rotate(6deg)}
+  .back .tape{background:rgba(255,143,183,.55)}
+  .t-small{font-family:var(--hand);font-weight:700;font-size:clamp(30px,8.6vw,44px);line-height:1}
+  .t-big{font-family:var(--hand);font-weight:700;font-size:clamp(76px,23vw,104px);line-height:.9;color:var(--pink-deep);text-shadow:3px 4px 0 var(--blue-soft);margin-top:6px}
+  .scribble{width:86%;height:auto;margin-top:2px}
+  .t-sub{font-size:clamp(18px,4.9vw,22px);line-height:32px;margin-top:12px;max-width:30ch}
+  .front{justify-content:center;padding-bottom:70px}
+  .t-sign{position:absolute;right:26px;bottom:22px;font-family:var(--hand);font-weight:700;font-size:32px;color:var(--blue-deep);transform:rotate(-5deg)}
+  .t-big2{font-family:var(--hand);font-weight:700;font-size:clamp(50px,14vw,70px);line-height:.92;color:var(--blue-deep);text-shadow:3px 3px 0 var(--pink-soft);margin-top:4px}
+  .office{width:110%;margin:12px 0 6px -5%;opacity:0}
+  .t-office{font-size:clamp(18px,4.9vw,22px);line-height:30px}
+  .t-names{font-family:var(--hand);font-weight:700;font-size:clamp(26px,7vw,34px);color:var(--pink-deep);margin-top:auto;align-self:flex-end;transform:rotate(-4deg);text-align:right}
+  .doodle{position:absolute;width:34px;height:34px;pointer-events:none;opacity:0}
+
+  .person{transform-box:fill-box;transform-origin:50% 100%}
+  .bob{animation:bob 1.8s ease-in-out infinite alternate}
+  .bob.b2{animation-delay:-.9s}
+  @keyframes bob{to{transform:translateY(-3px)}}
+  .eyes{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+  .eyes.e2{animation-delay:-2.1s}
+  @keyframes blink{0%,91%,100%{transform:scaleY(1)}94%{transform:scaleY(.1)}}
+  .blush{transform-box:fill-box;transform-origin:center}
+  #note,#bh{transform-box:view-box;transform-origin:0 0}
+  .steam path{animation:steam 2.4s ease-in-out infinite;opacity:0}
+  .steam path:nth-child(2){animation-delay:1.2s}
+  @keyframes steam{0%{opacity:0;transform:translateY(4px)}40%{opacity:.6}100%{opacity:0;transform:translateY(-9px)}}
+
+  #endbar{position:fixed;left:0;right:0;bottom:max(2.5vh,12px);z-index:15;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;pointer-events:none;transition:opacity .9s}
+  #endbar.on{opacity:1;pointer-events:auto}
+  #endHint{font-family:var(--hand);font-weight:700;font-size:22px;opacity:.7}
+  #replay{font-family:var(--pen);font-size:18px;color:var(--ink);background:var(--pink-pale);border:2px solid var(--ink);border-radius:999px;padding:6px 18px;box-shadow:3px 3px 0 var(--ink);cursor:pointer}
+  #replay:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
+</style>
+</head>
+<body class="loading">
+
+<!-- filter garis "goyang" biar kerasa digambar tangan -->
+<svg class="defs" aria-hidden="true">
+  <defs>
+    <filter id="w0" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="2"/><feDisplacementMap in="SourceGraphic" scale="2.8"/></filter>
+    <filter id="w1" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="2.8"/></filter>
+    <filter id="w2" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="17"/><feDisplacementMap in="SourceGraphic" scale="2.8"/></filter>
+    <filter id="wf0" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="4"/><feDisplacementMap in="SourceGraphic" scale="1"/></filter>
+    <filter id="wf1" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="11"/><feDisplacementMap in="SourceGraphic" scale="1"/></filter>
+    <filter id="wf2" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="23"/><feDisplacementMap in="SourceGraphic" scale="1"/></filter>
+  </defs>
+</svg>
+
+<div class="grain"></div>
+<canvas id="fx"></canvas>
+
+<main id="stage">
+  <!-- 1 & 2 : kado -> partikel -->
+  <section id="sGift" class="scene">
+    <p class="note" id="note"></p>
+    <div class="giftwrap" id="gw"></div>
+    <div class="hint" id="hint">
+      <svg class="arrow" viewBox="0 0 26 30"><path d="M13 28 C 10 19, 16 11, 13 3 M5 11 L13 2 L21 11" fill="none" stroke="#e8508f" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="hintText"></span>
+    </div>
+  </section>
+
+  <!-- 3 & 4 : dari bawah naik, pas di puncak -->
+  <section id="sRise" class="scene">
+    <div class="carrier" id="carrier"><div class="sw">
+      <svg id="hb" viewBox="0 0 100 100"><g data-boil>
+        <path d="M50 86 C 18 66, 4 46, 10 28 C 16 10, 40 8, 50 26 C 60 8, 84 10, 90 28 C 96 46, 82 66, 50 86Z" fill="#ff8fb7" stroke="#22305e" stroke-width="2.6" stroke-linejoin="round"/>
+        <path d="M45 85 L50 93 L55 85Z" fill="#ff8fb7" stroke="#22305e" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M22 31 Q 24 20, 34 18" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" opacity=".85"/>
+        <circle cx="20" cy="40" r="2.3" fill="#fff" opacity=".85"/>
+      </g></svg>
+      <svg id="str" viewBox="0 0 20 80" preserveAspectRatio="none"><path d="M10 0 C 3 18, 17 36, 10 56 C 6 68, 13 74, 10 80" fill="none" stroke="#22305e" stroke-width="1.6"/></svg>
+      <svg id="mini" viewBox="0 0 64 42"><g data-boil>
+        <rect x="2" y="2" width="60" height="38" rx="3" fill="#fffdfb" stroke="#22305e" stroke-width="2.2"/>
+        <path d="M3 4 L32 24 L61 4" fill="#ffd3e3" stroke="#22305e" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M32 31 C 25 26, 25 20.5, 29.5 20.5 C 31 20.5, 32 22, 32 23.5 C 32 22, 33 20.5, 34.5 20.5 C 39 20.5, 39 26, 32 31Z" fill="#e8508f"/>
+      </g></svg>
+    </div></div>
+    <p class="sing" id="sing"></p>
+  </section>
+
+  <!-- 5 & 6 : terima kasih sayang -> pasangan aku -->
+  <section id="sLetter" class="scene">
+    <div id="env">
+      <div class="env-back"></div>
+      <div class="env-letter" id="envLetter"></div>
+      <svg class="env-front" viewBox="0 0 100 64" preserveAspectRatio="none"><g data-boil="wf">
+        <path d="M1.5 4 L50 38 L98.5 4 L98.5 62.5 L1.5 62.5Z" fill="#e3eeff" stroke="#22305e" stroke-width="2.2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+        <path d="M2 62 L40 31 M98 62 L60 31" stroke="#22305e" stroke-width="1.6" vector-effect="non-scaling-stroke" opacity=".45" fill="none"/>
+      </g></svg>
+      <div class="env-flap"><svg viewBox="0 0 100 64" preserveAspectRatio="none"><g data-boil="wf">
+        <path d="M1.5 1.5 L50 40 L98.5 1.5Z" fill="#ffd3e3" stroke="#22305e" stroke-width="2.2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>
+      </g></svg></div>
+      <svg class="seal" id="seal" viewBox="0 0 40 40"><g data-boil>
+        <path d="M20 35 C 4 25, 3 12, 11 8.5 C 15.5 6.5, 19 9.5, 20 13 C 21 9.5, 24.5 6.5, 29 8.5 C 37 12, 36 25, 20 35Z" fill="#e8508f" stroke="#22305e" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M11 15 q1 -4 5 -4" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g></svg>
+    </div>
+
+    <div id="cardwrap"><div id="card">
+      <div class="face front">
+        <svg class="border"><rect data-boil fill="none" stroke="#22305e" stroke-width="2.4"/></svg>
+        <i class="tape t1"></i><i class="tape t2"></i>
+        <svg class="doodle" style="top:26px;right:22px;transform:rotate(12deg)" viewBox="0 0 40 40"><path data-boil d="M20 4 L24 15 L36 16 L27 24 L30 36 L20 29 L10 36 L13 24 L4 16 L16 15Z" fill="#cfe2ff" stroke="#22305e" stroke-width="2" stroke-linejoin="round"/></svg>
+        <svg class="doodle" style="bottom:72px;right:28px;width:26px;height:26px;transform:rotate(-10deg)" viewBox="0 0 40 40"><path data-boil d="M20 34 C 6 25, 4 14, 12 10 C 16 8, 19 11, 20 14 C 21 11, 24 8, 28 10 C 36 14, 34 25, 20 34Z" fill="#ffd3e3" stroke="#22305e" stroke-width="2.2" stroke-linejoin="round"/></svg>
+        <p class="t-small" id="fSmall"></p>
+        <p class="t-big" id="fBig"></p>
+        <svg class="scribble" viewBox="0 0 300 40">
+          <path id="scrib1" d="M8 22 C 70 6, 130 34, 190 16 S 268 12, 292 8" stroke="#ff8fb7" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <path id="scrib2" d="M34 33 C 100 22, 178 38, 256 26" stroke="#6ea8ff" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+        <p class="t-sub" id="fSub"></p>
+        <p class="t-sign" id="fSign"></p>
+      </div>
+
+      <div class="face back">
+        <svg class="border"><rect data-boil fill="none" stroke="#22305e" stroke-width="2.4"/></svg>
+        <i class="tape t1"></i><i class="tape t2"></i>
+        <svg class="doodle" style="top:28px;right:24px" viewBox="0 0 40 40"><path data-boil d="M20 4 Q22 18 36 20 Q22 22 20 36 Q18 22 4 20 Q18 18 20 4Z" fill="#ff8fb7" stroke="#22305e" stroke-width="2" stroke-linejoin="round"/></svg>
+        <p class="t-small" id="bSmall"></p>
+        <p class="t-big2" id="bBig"></p>
+
+        <svg class="office" id="office" viewBox="0 0 320 190">
+          <g id="bunting"></g>
+          <!-- dia (pink) -->
+          <g id="pA" class="person"><g class="bob">
+            <g data-boil>
+              <circle cx="90" cy="58" r="10" fill="#ff8fb7" stroke="#22305e" stroke-width="2.4"/>
+              <rect x="60" y="62" width="60" height="76" rx="28" fill="#ffd3e3" stroke="#22305e" stroke-width="2.4"/>
+              <path d="M90 49 L80 44 L81 55Z M90 49 L100 44 L99 55Z" fill="#6ea8ff" stroke="#22305e" stroke-width="1.6" stroke-linejoin="round"/>
+              <circle cx="90" cy="49.5" r="2.8" fill="#6ea8ff" stroke="#22305e" stroke-width="1.4"/>
+            </g>
+            <g class="eyes"><circle cx="80" cy="90" r="3.3" fill="#22305e"/><circle cx="100" cy="90" r="3.3" fill="#22305e"/></g>
+            <ellipse class="blush" cx="72" cy="99" rx="6" ry="3.5" fill="#ff8fb7" opacity=".75"/>
+            <ellipse class="blush" cx="108" cy="99" rx="6" ry="3.5" fill="#ff8fb7" opacity=".75"/>
+            <path d="M85 100 Q90 105 95 100" stroke="#22305e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g></g>
+          <!-- aku (biru) -->
+          <g id="pB" class="person"><g class="bob b2">
+            <g data-boil>
+              <rect x="200" y="60" width="60" height="78" rx="28" fill="#cfe2ff" stroke="#22305e" stroke-width="2.4"/>
+              <path d="M226 61 C 223 50, 232 45, 239 49" fill="none" stroke="#22305e" stroke-width="2.4" stroke-linecap="round"/>
+            </g>
+            <g class="eyes e2"><circle cx="220" cy="90" r="3.3" fill="#22305e"/><circle cx="240" cy="90" r="3.3" fill="#22305e"/></g>
+            <g fill="none" stroke="#22305e" stroke-width="1.8"><circle cx="220" cy="90" r="7.5"/><circle cx="240" cy="90" r="7.5"/><path d="M227.5 90 h5"/></g>
+            <ellipse class="blush" cx="211" cy="100" rx="6" ry="3.5" fill="#ff8fb7" opacity=".75"/>
+            <ellipse class="blush" cx="249" cy="100" rx="6" ry="3.5" fill="#ff8fb7" opacity=".75"/>
+            <path d="M225 101 Q230 106 235 101" stroke="#22305e" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </g></g>
+          <!-- meja kantor -->
+          <g data-boil>
+            <path d="M12 182 Q160 176 308 183" stroke="#22305e" stroke-width="2" fill="none" opacity=".45" stroke-linecap="round"/>
+            <path d="M44 140 V180 M276 140 V180" stroke="#22305e" stroke-width="2.6" stroke-linecap="round"/>
+            <rect x="22" y="128" width="276" height="13" rx="4" fill="#fffdfb" stroke="#22305e" stroke-width="2.4"/>
+            <path d="M70 130 L73 108 L107 108 L110 130Z" fill="#fff" stroke="#22305e" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M210 130 L213 108 L247 108 L250 130Z" fill="#fff" stroke="#22305e" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M90 124 C 84 120, 84 115, 87.5 115 C 89 115, 90 116.5, 90 117.5 C 90 116.5, 91 115, 92.5 115 C 96 115, 96 120, 90 124Z" fill="#ff8fb7"/>
+            <path d="M230 124 C 224 120, 224 115, 227.5 115 C 229 115, 230 116.5, 230 117.5 C 230 116.5, 231 115, 232.5 115 C 236 115, 236 120, 230 124Z" fill="#6ea8ff"/>
+            <rect x="151" y="111" width="18" height="18" rx="3" fill="#fff" stroke="#22305e" stroke-width="2.2"/>
+            <path d="M169 115 q7 0 7 5 q0 5 -7 5" fill="none" stroke="#22305e" stroke-width="2"/>
+            <path d="M160 124 C 156 121.5, 156 118, 158.3 118 C 159.3 118, 160 119, 160 119.7 C 160 119, 160.7 118, 161.7 118 C 164 118, 164 121.5, 160 124Z" fill="#ff8fb7"/>
+          </g>
+          <g class="steam" fill="none" stroke="#22305e" stroke-width="1.8" stroke-linecap="round">
+            <path d="M156 106 q-4 -6 0 -11 q4 -5 0 -10"/><path d="M164 106 q4 -6 0 -11 q-4 -5 0 -10"/>
+          </g>
+          <g id="note" opacity="0"><path d="M0 7 C -12 -1, -8 -11, 0 -5 C 8 -11, 12 -1, 0 7Z" fill="#ff8fb7" stroke="#22305e" stroke-width="1.8" stroke-linejoin="round"/></g>
+          <g id="bh" opacity="0">
+            <path d="M0 14 C -24 -2, -16 -22, 0 -10 C 16 -22, 24 -2, 0 14Z" fill="#e8508f" stroke="#22305e" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M-10 -8 q-3 2 -3 6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+          </g>
+        </svg>
+
+        <p class="t-office" id="bOff1"></p>
+        <p class="t-office" id="bOff2"></p>
+        <p class="t-names" id="bNames"></p>
+      </div>
+    </div></div>
+  </section>
+</main>
+
+<div id="endbar"><p id="endHint"></p><button id="replay">putar lagi ↺</button></div>
+
+<script>
+/* =========================================================
+   GANTI KATA-KATANYA DI SINI AJA ♡
+   ========================================================= */
+const CFG = {
+  intro:      "psst... ada kado buat kamu",
+  annoLabel:  "kado",
+  hint:       "tap kadonya ya",
+  afterOpen:  "eh, isinya apa yaa...",
+  flapWords:  ["kamu", "itu", "lucu", "banget"],   // atas, kiri, kanan, bawah
+  sing:       "lo le lo le ~ ♪",
+  letterTag:  "buat kamu",
+  thanksSmall:"terima kasih,",
+  thanksBig:  "sayang",
+  thanksSub:  "udah sabar sama aku, udah mau nemenin hari-hari aku yang kadang berantakan.",
+  sign:       "dari aku ♡",
+  backSmall:  "makasih udah mau jadi",
+  backBig:    "pasangan aku",
+  office:     ["dulu cuma ketemu di kantor,", "sekarang jadi kesayangan aku."],
+  names:      "office love-nya bubu & buna ♡",
+  end:        "tap di mana aja ya"
+};
+
+/* ---------- helper ---------- */
+const $ = s => document.querySelector(s);
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const rand = (a, b) => a + Math.random() * (b - a);
+const pick = a => a[(Math.random() * a.length) | 0];
+const INK='#22305e', PINK='#ff8fb7', PINKD='#e8508f', PINKS='#ffd3e3', BLUE='#6ea8ff', BLUED='#3a74d8', BLUES='#cfe2ff', WHITE='#fffdfb';
+
+function writeText(el, text, {stagger = 42, delay = 0, dur = 420} = {}) {
+  el.textContent = '';
+  const chars = [];
+  text.split(' ').forEach((w, wi, arr) => {
+    const ws = document.createElement('span'); ws.className = 'word';
+    for (const c of w) { const s = document.createElement('span'); s.className = 'ch'; s.textContent = c; ws.appendChild(s); chars.push(s); }
+    el.appendChild(ws);
+    if (wi < arr.length - 1) el.appendChild(document.createTextNode(' '));
+  });
+  const anims = chars.map((s, i) => {
+    const r = rand(-4, 4);
+    return s.animate([
+      {opacity: 0, transform: `translateY(9px) rotate(${(r * 2).toFixed(1)}deg) scale(.6)`},
+      {opacity: 1, transform: `translateY(-2px) rotate(${r.toFixed(1)}deg) scale(1.08)`, offset: .6},
+      {opacity: 1, transform: `translateY(0) rotate(${(r * .5).toFixed(1)}deg) scale(1)`}
+    ], {duration: dur, delay: delay + i * stagger + rand(0, stagger * .6), easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'both'});
+  });
+  return Promise.all(anims.map(a => a.finished));
+}
+const fade = (el, to, dur = 500) =>
+  el.animate([{opacity: getComputedStyle(el).opacity}, {opacity: to}], {duration: dur, fill: 'forwards', easing: 'ease'}).finished;
+
+function prepDraw(p) { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p._L = L; }
+function drawPath(p, dur, delay = 0) {
+  if (!p._L) prepDraw(p);
+  return p.animate([{strokeDashoffset: p._L}, {strokeDashoffset: 0}], {duration: dur, delay, easing: 'cubic-bezier(.5,0,.3,1)', fill: 'forwards'}).finished;
+}
+function flipFrom(a, el, {duration = 1000, easing = 'cubic-bezier(.2,.9,.25,1.1)', rot = 0} = {}) {
+  const b = el.getBoundingClientRect();
+  const dx = a.left + a.width / 2 - (b.left + b.width / 2);
+  const dy = a.top + a.height / 2 - (b.top + b.height / 2);
+  return el.animate([
+    {transform: `translate(${dx}px,${dy}px) scale(${a.width / b.width},${a.height / b.height}) rotate(${rot}deg)`},
+    {transform: 'translate(0px,0px) scale(1,1) rotate(0deg)'}
+  ], {duration, easing, fill: 'both'}).finished;
+}
+
+/* ---------- garis "mendidih" kayak animasi gambar tangan ---------- */
+let boilI = 0;
+setInterval(() => {
+  boilI = (boilI + 1) % 3;
+  document.querySelectorAll('[data-boil]').forEach((el, i) => {
+    const fam = el.getAttribute('data-boil') || 'w';
+    el.setAttribute('filter', `url(#${fam}${(boilI + i) % 3})`);
+  });
+}, 150);
+
+/* ---------- partikel ---------- */
+const cv = $('#fx'), cx = cv.getContext('2d');
+let W, H;
+function resize() {
+  const d = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  cv.width = W * d; cv.height = H * d; cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  cx.setTransform(d, 0, 0, d, 0, 0);
+}
+resize();
+const P = [], AMB = [];
+const COLS = [PINK, '#ffc2d8', BLUE, '#b8d6ff', WHITE, WHITE];
+
+function spawn(o) {
+  P.push(Object.assign({x:0,y:0,vx:0,vy:0,g:0,drag:.97,life:0,max:80,size:6,rot:0,vr:0,type:'dot',color:WHITE,flip:0,vf:0}, o));
+}
+function burst(x, y, n = 60, {power = 7, types = ['heart','spark','dot'], g = .1, spread = Math.PI * 2, dir = -Math.PI / 2, colors = COLS} = {}) {
+  for (let i = 0; i < n; i++) {
+    const a = dir + (Math.random() - .5) * spread, sp = power * (.3 + Math.random() * .85);
+    const type = pick(types);
+    spawn({x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, g, max: rand(60, 120), size: rand(4, 11), type, color: pick(colors),
+      rot: type === 'heart' ? rand(-.4, .4) : rand(0, 6.28), vr: type === 'heart' ? rand(-.02, .02) : rand(-.15, .15), drag: rand(.955, .975)});
+  }
+}
+function confetti(x, y, n = 40) {
+  for (let i = 0; i < n; i++)
+    spawn({x, y, vx: rand(-7, 7), vy: rand(-11, -3), g: .17, drag: .97, max: rand(110, 170), size: rand(6, 10), type: 'conf',
+      color: pick([PINK, BLUE, WHITE, PINKS, BLUES]), rot: rand(0, 6.28), vr: rand(-.2, .2), vf: rand(.1, .3)});
+}
+function fountain(x, y, dur) {
+  const t0 = performance.now();
+  const id = setInterval(() => {
+    if (performance.now() - t0 > dur) return clearInterval(id);
+    burst(x, y, 3, {power: 5, spread: 1.1, g: .09, types: ['spark','heart','dot']});
+  }, 70);
+}
+function shape(type, s, color) {
+  cx.beginPath();
+  if (type === 'heart') {
+    cx.moveTo(0, s * .35);
+    cx.bezierCurveTo(-s * 1.1, -s * .35, -s * .45, -s * 1.05, 0, -s * .45);
+    cx.bezierCurveTo(s * .45, -s * 1.05, s * 1.1, -s * .35, 0, s * .35);
+  } else if (type === 'spark') {
+    for (let i = 0; i < 8; i++) { const r = i % 2 ? s * .28 : s, a = i * Math.PI / 4; cx.lineTo(Math.cos(a) * r, Math.sin(a) * r); }
+  } else if (type === 'conf') {
+    cx.rect(-s / 2, -s / 4, s, s / 2);
+  } else if (type === 'ring') {
+    cx.arc(0, 0, s * .55, 0, 6.28); cx.strokeStyle = color; cx.lineWidth = 2; cx.stroke(); return;
+  } else {
+    cx.arc(0, 0, s * .42, 0, 6.28);
+  }
+  cx.closePath(); cx.fillStyle = color; cx.fill();
+  if (color === WHITE) { cx.strokeStyle = 'rgba(34,48,94,.35)'; cx.lineWidth = 1; cx.stroke(); }
+}
+function initAmb() {
+  AMB.length = 0;
+  const n = Math.round(Math.min(34, W * H / 24000));
+  for (let i = 0; i < n; i++)
+    AMB.push({x: rand(0, W), y: rand(0, H), r: rand(2.5, 6), vy: rand(-.45, -.12), ph: rand(0, 6.28), sp: rand(.006, .016),
+      c: pick([PINK, BLUE, WHITE, WHITE, PINKS]), t: pick(['dot', 'dot', 'spark', 'heart']), a: rand(.3, .7)});
+}
+initAmb();
+addEventListener('resize', () => { resize(); initAmb(); sizeBorders(); });
+
+(function tick() {
+  cx.clearRect(0, 0, W, H);
+  for (const a of AMB) {
+    a.ph += a.sp; a.y += a.vy;
+    if (a.y < -12) { a.y = H + 12; a.x = rand(0, W); }
+    cx.save(); cx.globalAlpha = a.a; cx.translate(a.x + Math.sin(a.ph) * 14, a.y); cx.rotate(Math.sin(a.ph) * .3);
+    shape(a.t, a.r, a.c); cx.restore();
+  }
+  for (let i = P.length - 1; i >= 0; i--) {
+    const p = P[i];
+    p.life++; p.vx *= p.drag; p.vy = p.vy * p.drag + p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+    const t = p.life / p.max;
+    if (t >= 1) { P.splice(i, 1); continue; }
+    cx.save();
+    cx.globalAlpha = t < .7 ? 1 : 1 - (t - .7) / .3;
+    cx.translate(p.x, p.y); cx.rotate(p.rot);
+    if (p.type === 'conf') { p.flip += p.vf; cx.scale(1, Math.cos(p.flip)); }
+    shape(p.type, p.size * Math.min(1, t * 7), p.color);
+    cx.restore();
+  }
+  requestAnimationFrame(tick);
+})();
+
+addEventListener('pointerdown', e => {
+  if (e.target.closest('#replay')) return;
+  burst(e.clientX, e.clientY, 10, {power: 4, types: ['heart', 'heart', 'spark'], g: .04, spread: 2.2});
+});
+
+/* ---------- bangun kado ---------- */
+function buildGift() {
+  const corners = [[15,15],[85,16],[16,85],[84,84]];
+  const fills = ['#fff3f8', '#eef5ff', '#eef5ff', '#fff3f8'];
+  const flapSVG = i => {
+    let dots = '';
+    corners.forEach(([x, y]) => dots += `<circle cx="${x + rand(-3,3)}" cy="${y + rand(-3,3)}" r="${rand(1.8,3).toFixed(1)}" fill="${pick([PINK, BLUE])}" opacity=".6"/>`);
+    return `<svg viewBox="0 0 100 100"><g data-boil><rect x="2" y="2" width="96" height="96" rx="4" fill="${fills[i]}" stroke="${INK}" stroke-width="2.6"/>${dots}</g></svg>`;
+  };
+  let pd = '';
+  for (let y = 12; y < 100; y += 19) for (let x = 12; x < 100; x += 19) {
+    if ((x > 34 && x < 66) || (y > 34 && y < 66)) continue;
+    pd += `<circle cx="${(x + rand(-2,2)).toFixed(1)}" cy="${(y + rand(-2,2)).toFixed(1)}" r="2.8" fill="#fff" opacity=".9"/>`;
+  }
+  const word = (w) => `<div class="w"><span style="display:inline-block;transform:rotate(${rand(-8,8).toFixed(1)}deg)">${w}</span></div>`;
+  const fw = CFG.flapWords;
+  $('#gw').innerHTML = `
+    <div class="glow"></div>
+    <div class="shadow"></div>
+    <svg class="rays" viewBox="-300 -300 600 600"><g id="raysG" data-boil></g></svg>
+    <div class="net idle">
+      <div class="inside"><svg viewBox="0 0 100 100">
+        <g data-boil>
+          <rect x="2" y="2" width="96" height="96" rx="4" fill="#ffe4ee" stroke="${INK}" stroke-width="2.6"/>
+          <rect x="12" y="12" width="76" height="76" rx="2" fill="#fff4f8" stroke="${INK}" stroke-width="1.4" opacity=".6"/>
+          <path d="M3 3 L12 12 M97 3 L88 12 M3 97 L12 88 M97 97 L88 88" stroke="${INK}" stroke-width="1.4" opacity=".6"/>
+        </g>
+        <g class="inheart">
+          <path data-boil d="M50 74 C 22 56, 20 34, 36 30 C 44 28, 49 33, 50 38 C 51 33, 56 28, 64 30 C 80 34, 78 56, 50 74Z" fill="${PINK}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M35 39 Q37 34 43 34" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg></div>
+      <div class="flap f-top">${flapSVG(0)}${word(fw[0])}</div>
+      <div class="flap f-left">${flapSVG(1)}${word(fw[1])}</div>
+      <div class="flap f-right">${flapSVG(2)}${word(fw[2])}</div>
+      <div class="flap f-bottom">${flapSVG(3)}${word(fw[3])}</div>
+      <div class="lid"><svg viewBox="0 0 100 100"><g data-boil>
+        <rect x="2" y="2" width="96" height="96" rx="5" fill="#ffb3cf" stroke="${INK}" stroke-width="2.6"/>
+        ${pd}
+        <rect x="41" y="2" width="18" height="96" fill="${BLUE}" stroke="${INK}" stroke-width="2"/>
+        <rect x="2" y="41" width="96" height="18" fill="${BLUE}" stroke="${INK}" stroke-width="2"/>
+        <rect x="42" y="42" width="16" height="16" fill="${BLUE}"/>
+        <path d="M46 6 V37 M46 63 V94 M6 46 H37 M63 46 H94" stroke="#fff" stroke-width="1.6" opacity=".7"/>
+      </g></svg></div>
+      <svg class="bow" viewBox="0 0 100 70"><g data-boil>
+        <path d="M45 42 L31 66 L39 62 L43 69 L50 44Z" fill="${BLUE}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M55 42 L69 66 L61 62 L57 69 L50 44Z" fill="${BLUE}" stroke="${INK}" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M50 38 C 34 12, 6 12, 8 32 C 10 50, 34 48, 50 38Z" fill="${BLUE}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M50 38 C 66 12, 94 12, 92 32 C 90 50, 66 48, 50 38Z" fill="${BLUE}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>
+        <path d="M45 35 C 34 26, 21 24, 17 31 M55 35 C 66 26, 79 24, 83 31" stroke="${INK}" stroke-width="1.5" fill="none" opacity=".55"/>
+        <path d="M20 22 Q 26 17 33 19" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/>
+        <ellipse cx="50" cy="39" rx="8.5" ry="7.5" fill="#8fbcff" stroke="${INK}" stroke-width="2.4"/>
+      </g></svg>
+    </div>
+    <svg class="anno" viewBox="0 0 78 62"><g data-boil fill="none" stroke="${INK}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path class="ap" d="M6 58 C 2 32, 20 14, 60 16"/><path class="ap" d="M49 7 L61 16 L50 26"/>
+    </g></svg>
+    <div class="anno-label">${CFG.annoLabel}</div>`;
+
+  // garis-garis partikel kayak di sketsa
+  let html = '';
+  const N = 16;
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2 + rand(-.12, .12);
+    const r1 = rand(232, 242), r2 = r1 + rand(32, 46), ex = .66;
+    const x1 = Math.cos(a) * r1 * ex, y1 = Math.sin(a) * r1, x2 = Math.cos(a) * r2 * ex, y2 = Math.sin(a) * r2;
+    const mx = (x1 + x2) / 2 + rand(-7, 7), my = (y1 + y2) / 2 + rand(-7, 7);
+    const col = [INK, PINK, BLUE][i % 3];
+    html += `<path d="M${x1.toFixed(1)} ${y1.toFixed(1)} Q${mx.toFixed(1)} ${my.toFixed(1)} ${x2.toFixed(1)} ${y2.toFixed(1)}" stroke="${col}" stroke-width="${col === INK ? 3 : 4.5}" fill="none" stroke-linecap="round" opacity="${col === INK ? .5 : .95}"/>`;
+  }
+  $('#raysG').innerHTML = html;
+  document.querySelectorAll('#raysG path, .anno .ap').forEach(prepDraw);
+  $('#hintText').textContent = CFG.hint;
+}
+
+function buildMisc() {
+  // bendera kecil di kantor
+  let h = `<path d="M14 12 Q160 46 306 12" fill="none" stroke="${INK}" stroke-width="1.6"/>`;
+  const cols = [PINK, BLUE, WHITE];
+  for (let i = 0; i < 11; i++) {
+    const t = .06 + i * .088;
+    const x = (1 - t) ** 2 * 14 + 2 * (1 - t) * t * 160 + t * t * 306;
+    const y = (1 - t) ** 2 * 12 + 2 * (1 - t) * t * 46 + t * t * 12;
+    h += `<path d="M${(x - 7).toFixed(1)} ${y.toFixed(1)} L${(x + 7).toFixed(1)} ${y.toFixed(1)} L${x.toFixed(1)} ${(y + 14).toFixed(1)}Z" fill="${cols[i % 3]}" stroke="${INK}" stroke-width="1.6" stroke-linejoin="round"/>`;
+  }
+  $('#bunting').innerHTML = `<g data-boil>${h}</g>`;
+  $('#envLetter').textContent = CFG.letterTag;
+  prepDraw($('#scrib1')); prepDraw($('#scrib2'));
+}
+
+function sizeBorders() {
+  document.querySelectorAll('.face').forEach(f => {
+    const w = f.offsetWidth, h = f.offsetHeight, svg = f.querySelector('.border'), r = svg.querySelector('rect');
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+    r.setAttribute('x', 1.5); r.setAttribute('y', 1.5); r.setAttribute('width', w - 3); r.setAttribute('height', h - 3); r.setAttribute('rx', 14);
+  });
+}
+
+function balloonSVG(col) {
+  return `<svg viewBox="0 0 60 110" style="width:100%"><g data-boil>
+    <path d="M30 4 C 12 4, 4 20, 6 34 C 8 50, 22 62, 30 66 C 38 62, 52 50, 54 34 C 56 20, 48 4, 30 4Z" fill="${col}" stroke="${INK}" stroke-width="2.2"/>
+    <path d="M26 66 L30 72 L34 66Z" fill="${col}" stroke="${INK}" stroke-width="1.8" stroke-linejoin="round"/>
+    <path d="M15 22 Q17 12 26 10" stroke="#fff" stroke-width="3.2" fill="none" stroke-linecap="round" opacity="${col === WHITE ? .0 : .85}"/>
+    <path d="M30 72 C 24 82, 36 92, 30 108" stroke="${INK}" stroke-width="1.3" fill="none"/>
+  </g></svg>`;
+}
+function spawnBalloon() {
+  const w = rand(28, 56);
+  const b = document.createElement('div');
+  b.className = 'bal';
+  b.style.left = rand(3, 90) + '%'; b.style.width = w + 'px'; b.style.zIndex = w < 38 && Math.random() < .5 ? 4 : 1;
+  b.innerHTML = `<div class="sw" style="--d:${rand(2.2, 3.8).toFixed(2)}s;animation-delay:${-rand(0, 3).toFixed(2)}s">${balloonSVG(pick([PINK, BLUE, WHITE, PINKS, BLUES]))}</div>`;
+  $('#sRise').appendChild(b);
+  b.animate([{transform: 'translateY(0)'}, {transform: `translateY(${-(H + w * 2.4 + 60)}px)`}],
+    {duration: rand(6500, 9500), easing: 'cubic-bezier(.35,.15,.6,1)', fill: 'forwards'}).finished.then(() => b.remove());
+}
+
+/* ---------- adegan ---------- */
+function waitTap(el) { return new Promise(res => el.addEventListener('click', res, {once: true})); }
+
+async function intro() {
+  await writeText($('#note'), CFG.intro, {stagger: 50});
+  const aps = document.querySelectorAll('.anno .ap');
+  drawPath(aps[0], 600); drawPath(aps[1], 300, 550);
+  $('.anno-label').animate([{opacity: 0, transform: 'rotate(-6deg) translateY(6px)'}, {opacity: 1, transform: 'rotate(-6deg)'}], {duration: 500, delay: 700, fill: 'forwards'});
+  await sleep(700);
+  fade($('#hint'), 1, 600);
+}
+
+async function openGift() {
+  const gw = $('#gw'), net = $('.net'), lid = $('.lid'), bow = $('.bow');
+  net.classList.remove('idle');
+  fade($('#hint'), 0, 300); fade($('.anno'), 0, 300); fade($('.anno-label'), 0, 300);
+  writeText($('#note'), CFG.afterOpen, {stagger: 40});
+  if (navigator.vibrate) navigator.vibrate(15);
+
+  await net.animate([{transform: 'rotate(0)'}, {transform: 'rotate(-8deg) scale(1.03)'}, {transform: 'rotate(7deg)'}, {transform: 'rotate(-5deg)'}, {transform: 'rotate(3deg)'}, {transform: 'rotate(0)'}],
+    {duration: 700, easing: 'ease-in-out'}).finished;
+  await net.animate([{transform: 'scale(1,1)'}, {transform: 'scale(1.1,.86)'}], {duration: 180, easing: 'ease-out', fill: 'forwards'}).finished;
+  net.animate([{transform: 'scale(1.1,.86)'}, {transform: 'scale(.94,1.08)'}, {transform: 'scale(1,1)'}], {duration: 420, easing: 'cubic-bezier(.3,1.5,.5,1)', fill: 'forwards'});
+
+  const S = gw.offsetWidth;
+  bow.animate([{transform: 'none', opacity: 1}, {transform: `translate(${S * .7}px,${-S * 1.9}px) rotate(220deg) scale(.5)`, opacity: 0}],
+    {duration: 1000, easing: 'cubic-bezier(.2,.7,.4,1)', fill: 'forwards'});
+  lid.animate([
+    {transform: 'translateY(0) rotate(0deg) scale(1)'},
+    {transform: `translateY(${-S * .5}px) rotate(-9deg) scale(1.1)`, offset: .3},
+    {transform: `translateY(${-S * 2.15}px) rotate(5deg) scale(1.03)`, offset: .75},
+    {transform: `translateY(${-S * 2}px) rotate(0deg) scale(1)`}
+  ], {duration: 1400, easing: 'cubic-bezier(.3,.6,.3,1)', fill: 'forwards'});
+
+  await sleep(120);
+  const ir = $('.inside').getBoundingClientRect();
+  const bx = ir.left + ir.width / 2, by = ir.top + ir.height / 2;
+  burst(bx, by, 80, {power: 10, types: ['heart', 'spark', 'dot', 'ring'], g: .11});
+  fountain(bx, by, 1500);
+  $('.glow').animate([{opacity: 0, transform: 'scale(.4)'}, {opacity: 1, transform: 'scale(1)'}], {duration: 900, easing: 'ease-out', fill: 'forwards'});
+  fade($('.shadow'), 0, 400);
+
+  const flaps = [['.f-top', 'X', -90], ['.f-right', 'Y', -90], ['.f-bottom', 'X', 90], ['.f-left', 'Y', 90]];
+  flaps.forEach(([sel, ax, st], i) => {
+    const sg = Math.sign(st);
+    $(sel).animate([
+      {transform: `rotate${ax}(${st}deg)`, opacity: 0, easing: 'cubic-bezier(.55,0,.9,.55)'},
+      {opacity: 1, offset: .1},
+      {transform: `rotate${ax}(0deg)`, offset: .55, easing: 'ease-out'},
+      {transform: `rotate${ax}(${sg * 14}deg)`, offset: .72, easing: 'ease-in'},
+      {transform: `rotate${ax}(0deg)`, offset: .86, easing: 'ease-out'},
+      {transform: `rotate${ax}(${sg * 4}deg)`, offset: .93, easing: 'ease-in'},
+      {transform: `rotate${ax}(0deg)`, opacity: 1}
+    ], {duration: 1050, delay: 140 + i * 110, fill: 'forwards'});
+  });
+
+  gw.animate([{transform: 'translateY(0)'}, {transform: `translateY(${S / 2}px)`}], {duration: 1300, delay: 200, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards'});
+  document.querySelectorAll('#raysG path').forEach((p, i) => drawPath(p, 450, 450 + i * 35));
+  await sleep(900);
+  $('.inheart').classList.add('beat');
+  await sleep(1100);
+  fade($('.rays'), 0, 900);
+}
+
+async function riseUp() {
+  $('#sGift').animate([{transform: 'translateY(0)', opacity: 1}, {transform: `translateY(${H * .75}px)`, opacity: 0}],
+    {duration: 1700, easing: 'cubic-bezier(.55,0,.35,1)', fill: 'forwards'});
+  for (let i = 0; i < 14; i++) setTimeout(spawnBalloon, 150 + i * 260 + rand(0, 200));
+  await sleep(450);
+  const rise = $('#carrier').animate([{transform: 'translateY(0)'}, {transform: `translateY(${H * .1 - H}px)`}],
+    {duration: 5400, easing: 'cubic-bezier(.3,.55,.3,1)', fill: 'forwards'});
+  await sleep(900);
+  const sing = $('#sing');
+  writeText(sing, CFG.sing, {stagger: 70}).then(() => {});
+  sing.querySelectorAll('.word').forEach((w, i) => w.style.animationDelay = (i * .18) + 's');
+  sing.animate([{transform: 'translateY(0)'}, {transform: `translateY(${-H * .12}px)`}], {duration: 5200, easing: 'ease-out', fill: 'forwards'});
+  await rise.finished;
+}
+
+async function popAtPeak() {
+  const hb = $('#hb');
+  await hb.animate([{transform: 'scale(1)'}, {transform: 'scale(1.07,.94)'}, {transform: 'scale(.95,1.06)'}, {transform: 'scale(1.1)'}, {transform: 'scale(1.02)'}, {transform: 'scale(1.18)'}],
+    {duration: 950, easing: 'ease-in-out', fill: 'forwards'}).finished;
+  const r = hb.getBoundingClientRect();
+  const x = r.left + r.width / 2, y = r.top + r.height * .45;
+  hb.style.visibility = 'hidden';
+  fade($('#str'), 0, 200);
+  burst(x, y, 90, {power: 11, types: ['heart', 'spark', 'dot', 'ring'], g: .1});
+  confetti(x, y, 46);
+  if (navigator.vibrate) navigator.vibrate(30);
+
+  const pop = document.createElement('div');
+  pop.className = 'pop'; pop.textContent = 'pop!';
+  $('#sRise').appendChild(pop);
+  pop.animate([
+    {transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(.3) rotate(-10deg)`, opacity: 0},
+    {transform: `translate(${x}px,${y}px) translate(-50%,-50%) scale(1.2) rotate(-6deg)`, opacity: 1, offset: .25},
+    {transform: `translate(${x}px,${y - 30}px) translate(-50%,-50%) scale(1) rotate(-4deg)`, opacity: 0}
+  ], {duration: 1100, easing: 'ease-out', fill: 'forwards'});
+
+  fade($('#sing'), 0, 600);
+  const mini = $('#mini'), env = $('#env');
+  const fr = mini.getBoundingClientRect();
+  const p = flipFrom(fr, env, {duration: 1300, rot: -14, easing: 'cubic-bezier(.25,1.15,.35,1)'});
+  env.style.visibility = 'visible'; mini.style.visibility = 'hidden';
+  await p;
+}
+
+async function openLetter() {
+  const env = $('#env'), seal = $('#seal'), flap = $('.env-flap'), letter = $('#envLetter');
+  await env.animate([{transform: 'rotate(0)'}, {transform: 'rotate(-2.5deg)'}, {transform: 'rotate(2deg)'}, {transform: 'rotate(0)'}], {duration: 450}).finished;
+  const sr = seal.getBoundingClientRect();
+  seal.animate([{transform: 'none', opacity: 1}, {transform: 'translate(18px,-70px) rotate(40deg) scale(1.3)', opacity: 0}],
+    {duration: 650, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards'});
+  burst(sr.left + sr.width / 2, sr.top + sr.height / 2, 16, {power: 5, types: ['heart'], g: .07});
+  await sleep(160);
+  await flap.animate([{transform: 'rotateX(0deg)'}, {transform: 'rotateX(90deg)'}], {duration: 320, easing: 'ease-in', fill: 'forwards'}).finished;
+  flap.style.zIndex = 1;
+  await flap.animate([{transform: 'rotateX(90deg)'}, {transform: 'rotateX(180deg)'}], {duration: 420, easing: 'cubic-bezier(.2,.8,.3,1.2)', fill: 'forwards'}).finished;
+  await sleep(150);
+  await letter.animate([{transform: 'translateY(0)'}, {transform: 'translateY(-58%)'}], {duration: 850, easing: 'cubic-bezier(.4,0,.2,1)', fill: 'forwards'}).finished;
+  await sleep(250);
+  const lr = letter.getBoundingClientRect(), cw = $('#cardwrap');
+  env.animate([{transform: 'translateY(0)', opacity: 1}, {transform: 'translateY(90px) rotate(5deg)', opacity: 0}], {duration: 700, easing: 'ease-in', fill: 'forwards'});
+  letter.style.visibility = 'hidden';
+  const p = flipFrom(lr, cw, {duration: 1100, easing: 'cubic-bezier(.3,1.12,.4,1)'});
+  cw.style.visibility = 'visible';
+  await p;
+}
+
+function popDoodles(face) {
+  face.querySelectorAll('.doodle').forEach((d, i) => {
+    const base = d.style.transform || '';
+    d.animate([{opacity: 0, transform: `${base} scale(0)`}, {opacity: 1, transform: `${base} scale(1.25)`, offset: .6}, {opacity: 1, transform: `${base} scale(1)`}],
+      {duration: 500, delay: i * 180, easing: 'ease-out', fill: 'forwards'});
+  });
+}
+
+async function writeFront() {
+  await writeText($('#fSmall'), CFG.thanksSmall, {stagger: 55});
+  await writeText($('#fBig'), CFG.thanksBig, {stagger: 120, dur: 600});
+  drawPath($('#scrib1'), 700);
+  drawPath($('#scrib2'), 600, 350);
+  const r = $('#fBig').getBoundingClientRect();
+  burst(r.left + r.width * .8, r.top + r.height * .3, 18, {power: 5, types: ['heart', 'spark'], g: .05});
+  popDoodles($('.front'));
+  await sleep(500);
+  await writeText($('#fSub'), CFG.thanksSub, {stagger: 22, dur: 360});
+  await writeText($('#fSign'), CFG.sign, {stagger: 60});
+}
+
+async function flipCard() {
+  await $('#card').animate([{transform: 'rotateY(0deg)'}, {transform: 'rotateY(90deg) scale(.93)', offset: .5}, {transform: 'rotateY(180deg)'}],
+    {duration: 1200, easing: 'cubic-bezier(.45,.05,.3,1)', fill: 'forwards'}).finished;
+}
+
+let sender = 0;
+async function officeLoop() {
+  const A = $('#pA'), B = $('#pB'), note = $('#note'), heart = $('#bh');
+  while (true) {
+    const S = sender ? B : A, R = sender ? A : B;
+    const fromX = sender ? 212 : 108, toX = sender ? 108 : 212, lean = sender ? -7 : 7;
+    S.animate([{transform: 'rotate(0deg)'}, {transform: `rotate(${lean}deg)`, offset: .3}, {transform: `rotate(${lean}deg)`, offset: .7}, {transform: 'rotate(0deg)'}],
+      {duration: 1500, easing: 'ease-in-out'});
+    await sleep(350);
+    const kf = [];
+    for (let i = 0; i <= 18; i++) {
+      const t = i / 18, x = fromX + (toX - fromX) * t, y = 96 - 46 * 4 * t * (1 - t);
+      kf.push({transform: `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${(Math.sin(t * 9) * 18).toFixed(1)}deg) scale(${(.8 + .5 * Math.sin(Math.PI * t)).toFixed(2)})`,
+        opacity: t < .08 ? t / .08 : 1});
+    }
+    await note.animate(kf, {duration: 1300, easing: 'linear', fill: 'forwards'}).finished;
+    note.animate([{opacity: 1}, {opacity: 0}], {duration: 200, fill: 'forwards'});
+
+    R.animate([{transform: 'translateY(0)'}, {transform: 'translateY(-8px)'}, {transform: 'translateY(0)'}], {duration: 450, easing: 'cubic-bezier(.3,1.6,.5,1)'});
+    R.querySelectorAll('.blush').forEach(b => b.animate([{transform: 'scale(1)'}, {transform: 'scale(1.8)'}, {transform: 'scale(1.3)'}], {duration: 700, fill: 'forwards', easing: 'ease-out'}));
+    heart.animate([
+      {transform: 'translate(160px,70px) scale(0)', opacity: 0},
+      {transform: 'translate(160px,64px) scale(1.3)', opacity: 1, offset: .6},
+      {transform: 'translate(160px,66px) scale(1)', opacity: 1}
+    ], {duration: 600, fill: 'forwards', easing: 'ease-out'});
+    await sleep(350);
+    const hr = heart.getBoundingClientRect();
+    burst(hr.left + hr.width / 2, hr.top + hr.height / 2, 14, {power: 4.5, types: ['heart', 'spark'], g: .04});
+    await sleep(1600);
+    heart.animate([{transform: 'translate(160px,66px) scale(1)', opacity: 1}, {transform: 'translate(160px,46px) scale(.7)', opacity: 0}], {duration: 650, fill: 'forwards', easing: 'ease-in'});
+    R.querySelectorAll('.blush').forEach(b => b.animate([{transform: 'scale(1.3)'}, {transform: 'scale(1)'}], {duration: 600, fill: 'forwards'}));
+    sender = 1 - sender;
+    await sleep(1300);
+  }
+}
+
+async function writeBack() {
+  writeText($('#bSmall'), CFG.backSmall, {stagger: 45});
+  popDoodles($('.back'));
+  await sleep(600);
+  await writeText($('#bBig'), CFG.backBig, {stagger: 85, dur: 520});
+  $('#office').animate([{opacity: 0, transform: 'translateY(12px) scale(.96)'}, {opacity: 1, transform: 'none'}], {duration: 700, easing: 'cubic-bezier(.2,.9,.3,1.2)', fill: 'forwards'});
+  setTimeout(officeLoop, 700);
+  await sleep(500);
+  await writeText($('#bOff1'), CFG.office[0], {stagger: 30});
+  await writeText($('#bOff2'), CFG.office[1], {stagger: 30});
+  await sleep(250);
+  await writeText($('#bNames'), CFG.names, {stagger: 55});
+}
+
+/* ---------- jalan ---------- */
+async function main() {
+  await Promise.race([document.fonts.ready, sleep(2500)]);
+  buildGift(); buildMisc(); sizeBorders();
+  document.body.classList.remove('loading');
+  await sleep(600);
+  await intro();
+  await waitTap($('#sGift'));
+  await openGift();
+  await sleep(1300);
+  await riseUp();
+  await popAtPeak();
+  await sleep(450);
+  await openLetter();
+  await writeFront();
+  await sleep(3400);
+  await flipCard();
+  await writeBack();
+  await sleep(900);
+  $('#endHint').textContent = CFG.end;
+  $('#endbar').classList.add('on');
+}
+$('#replay').addEventListener('click', () => location.reload());
+main();
+</script>
+</body>
+</html>
